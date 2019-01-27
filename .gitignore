@@ -1,3 +1,6 @@
 nginx-1.13/conf.d/*
+!nginx-1.13/conf.d/.gitkeep
 mount-logs/*
+!mount-logs/.gitkeep
 mount-volumes/*
+!mount-volumes/.gitkeep
