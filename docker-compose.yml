@@ -1,0 +1,53 @@
+version: "3.4"
+
+# create src-data-volume on docker hostDocker
+volumes:
+  src-data:
+    driver_opts:
+      type: none
+      ###############################
+      device: HERE
+      # ↑Change Your Workspace Path
+      ###############################
+      o: bind
+
+# service container define
+services:
+
+  web-nginx-1.13:
+    restart: unless-stopped
+    build: nginx-1.13
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - db-mysql-5.7
+      - app-ruby-2.5.1
+    volumes:
+      # sync to nginx.conf
+      - ./nginx-1.13/nginx.conf:/etc/nginx/nginx.conf
+      # mount to sites-available
+      - ./nginx-1.13/conf.d:/etc/nginx/conf.d:ro
+      # mount to nginx log
+      - ./mount-logs/nginx-log-data:/var/log/nginx
+      # mount to src
+      - src-data:/var/www/html
+
+  app-ruby-2.5.1:
+    restart: unless-stopped
+    build: ./ruby-2.5.1
+    tty: true
+    volumes:
+      - src-data:/var/www/html:rw
+    depends_on:
+      - db-mysql-5.7
+
+  db-mysql-5.7:
+    restart: unless-stopped
+    build: ./mysql-5.7
+    env_file: ./mysql-5.7/.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mount-volumes/mysql-5.7/data:/var/lib/mysql
+      - ./mount-volumes/mysql-5.7/dump:/tmp
